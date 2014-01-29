@@ -15,16 +15,22 @@ RUN cd Python-3.3.3/ && make install DESTDIR=/tmp/installdir
 
 RUN wget --no-check-certificate https://raw.github.com/pypa/pip/master/contrib/get-pip.py
 RUN /tmp/installdir/usr/local/bin/python3 /get-pip.py
-RUN rm /tmp/installdir/usr/local/bin/pip
-RUN rm /tmp/installdir/usr/local/bin/easy_install
+
+RUN /tmp/installdir/usr/local/bin/pip3 install -U virtualenv
+RUN mv /tmp/installdir/usr/local/bin/virtualenv /tmp/installdir/usr/local/bin/virtualenv-3.3
+RUN cp /tmp/installdir/usr/local/bin/virtualenv-3.3 /tmp/installdir/usr/local/bin/virtualenv3
 
 RUN cd /tmp/installdir/usr/local/bin/ \
- && sed -ri '1 s/^.*$/\#!\/usr\/local\/bin\/python3.3/g' pip3 pip3.3 easy_install-3.3
+ && sed -ri '1 s/^.*$/\#!\/usr\/local\/bin\/python3.3/g' pip3 pip3.3 easy_install-3.3 virtualenv-3.3 virtualenv3
+
+RUN rm /tmp/installdir/usr/local/bin/pip
+RUN rm /tmp/installdir/usr/local/bin/easy_install
+RUN rm /tmp/installdir/usr/local/bin/virtualenv-2.7
 
 RUN mkdir /packages
 
 # Genreate a python3-full environment package
-RUN echo 'cd /packages && fpm -s dir -t deb -n python3-full -v 3.3.3 -C /tmp/installdir -p python3-full-VERSION_ARCH.deb -d "libc6 (>= 2.15)" -d  "libexpat1 (>= 1.95.8)" -d "libffi6 (>= 3.0.4)" -d "libssl1.0.0 (>= 1.0.0)" -d "zlib1g (>= 1:1.2.0)" -d "gcc (>= 0)" -d "libc-dev (>= 0)" usr/local/bin  usr/local/lib  usr/local/share/man' > /build.sh
+RUN echo 'cd /packages && fpm -s dir -t deb -n python3-full -v 3.3.3 -C /tmp/installdir -p python3-full-VERSION_ARCH.deb -d "libc6 (>= 2.15)" -d  "libexpat1 (>= 1.95.8)" -d "libffi6 (>= 3.0.4)" -d "libssl1.0.0 (>= 1.0.0)" -d "zlib1g (>= 1:1.2.0)" -d "gcc (>= 0)" -d "libc6-dev (>= 0)" usr/local/bin  usr/local/lib usr/local/include usr/local/share/man' > /build.sh
 
 #
 RUN chmod a+x /build.sh
